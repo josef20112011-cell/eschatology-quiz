@@ -1,0 +1,457 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>基督教末世論信仰測驗｜哪個學派最貼近你？</title>
+  <style>
+    :root{
+      --bg:#f7f7fb;
+      --card:#ffffff;
+      --ink:#1f2937;
+      --ink-2:#4b5563;
+      --pri:#4656e8;
+      --pri-2:#e7e9ff;
+      --ok:#16a34a;
+      --warn:#d97706;
+      --err:#dc2626;
+      --mut:#e5e7eb;
+      --shadow:0 6px 20px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Heiti TC", "Microsoft JhengHei", Arial, sans-serif;
+      color:var(--ink);
+      background:linear-gradient(180deg,#f3f4ff 0%, var(--bg) 30%);
+      line-height:1.6;
+    }
+    header{
+      padding:24px 16px 8px;
+      text-align:center;
+    }
+    .wrapper{
+      max-width:980px;
+      margin:0 auto;
+      padding:0 16px 80px;
+    }
+    .hero{
+      background: var(--card);
+      border-radius:16px;
+      padding:24px;
+      box-shadow: var(--shadow);
+      display:flex;
+      gap:20px;
+      align-items:center;
+      margin-bottom:16px;
+    }
+    .hero h1{
+      margin:0 0 8px;
+      font-size: clamp(22px, 3.6vw, 32px);
+      letter-spacing:.5px;
+    }
+    .hero p{margin:0;color:var(--ink-2)}
+    .badge{
+      display:inline-block;
+      background:var(--pri-2);
+      color:#222;
+      padding:2px 10px;
+      border-radius:999px;
+      font-size:12px;
+      margin-left:6px;
+    }
+    .progress{
+      margin:16px 0 0;
+      height:10px;
+      background: #eef2ff;
+      border-radius:999px;
+      overflow:hidden;
+      position:relative;
+    }
+    .bar{
+      position:absolute;
+      left:0;top:0;bottom:0;
+      width:0%;
+      background: linear-gradient(90deg, #4656e8, #7c8bff);
+      transition:width .25s ease;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:14px;
+      margin-top:16px;
+    }
+    @media (min-width: 880px){
+      .grid{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+    .q{
+      background:var(--card);
+      border-radius:14px;
+      padding:18px 18px 12px;
+      box-shadow: var(--shadow);
+    }
+    .q h3{
+      margin:.2rem 0 .6rem;
+      font-size:17px;
+    }
+    .opt{
+      display:block;
+      padding:10px 12px;
+      border:1px solid var(--mut);
+      border-radius:10px;
+      margin:8px 0;
+      cursor:pointer;
+      transition: all .18s ease;
+    }
+    .opt:hover{border-color:#bfc3ff; background:#fafaff}
+    input[type="radio"]{display:none}
+    input[type="radio"]:checked + .opt{
+      border-color: var(--pri);
+      background: #f5f6ff;
+      box-shadow: inset 0 0 0 2px var(--pri);
+    }
+    .actions{
+      margin:22px 0 0;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+    }
+    button{
+      border:0;
+      border-radius:12px;
+      padding:12px 16px;
+      font-weight:600;
+      cursor:pointer;
+      background:var(--pri);
+      color:white;
+      box-shadow: var(--shadow);
+    }
+    button[disabled]{opacity:.5; cursor:not-allowed}
+    .btn-sec{
+      background:#fff;
+      color:#111;
+      border:1px solid var(--mut);
+    }
+    .result{
+      margin-top:22px;
+      background:var(--card);
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      padding:20px;
+      display:none;
+    }
+    .pill{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      background:#eef2ff;
+      color:#222;
+      margin:0 8px 8px 0;
+    }
+    .footnote{
+      margin-top:10px;
+      color:var(--ink-2);
+      font-size:13px;
+    }
+    .small{
+      font-size:12px;color:var(--ink-2)
+    }
+    .share{
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:10px
+    }
+    .sr-only{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrapper">
+      <div class="hero" role="banner" aria-label="測驗介紹">
+        <div style="flex:1">
+          <h1>基督教末世論信仰測驗 <span class="badge">20 題｜3–5 分鐘</span></h1>
+          <p>判斷你較接近：<strong>前千禧（歷史前/時代論）</strong>、<strong>後千禧</strong>、<strong>無千禧</strong>。完成後即時顯示結果與解釋，無需上傳資料。</p>
+          <div class="progress" aria-label="作答進度"><div class="bar" id="bar"></div></div>
+          <p class="small" id="counter" aria-live="polite">已作答 0 / 20</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper" id="app">
+    <form id="quiz" novalidate>
+      <div class="grid" id="qGrid">
+        <!-- Questions will be injected here by JS -->
+      </div>
+
+      <div class="actions">
+        <button type="button" id="submitBtn" disabled>送出並產生結果</button>
+        <button type="button" class="btn-sec" id="resetBtn">全部清除</button>
+        <button type="button" class="btn-sec" id="printBtn">列印 / 存成 PDF</button>
+      </div>
+    </form>
+
+    <section class="result" id="result" aria-live="polite" aria-atomic="true">
+      <h2 style="margin-top:0">你的測驗結果</h2>
+      <p id="primary"></p>
+      <div id="tags" style="margin:6px 0 14px;"></div>
+      <div id="explain"></div>
+
+      <div class="share">
+        <button type="button" id="copyBtn" class="btn-sec">複製結果摘要</button>
+        <button type="button" id="restartBtn">再測一次</button>
+      </div>
+
+      <p class="footnote">此測驗僅供自我覺察與神學對話參考，並非權威定論；不同教派與學者會有細部差異。</p>
+    </section>
+  </main>
+
+  <script>
+  // ---- Question Bank (Traditional Chinese) ----
+  const QUESTIONS = [
+    {t:"我相信耶穌會在地上親自統治一千年。", A:"是的，祂將建立地上國度", B:"否，那是教會得勝的象徵時期", C:"否，千禧只是屬靈象徵"},
+    {t:"耶穌再來之前會有大災難與敵基督出現。", A:"一定會", B:"有象徵性意義", C:"不強調這種預兆"},
+    {t:"耶穌的再來是分兩次：被提與降臨分開。", A:"是的（時代論）", B:"不是，應是同一事件", C:"不確定"},
+    {t:"聖殿將在末世重新被建造。", A:"是的，這是預言應驗", B:"否，聖殿象徵神的同在", C:"重點在信徒作為活石的殿"},
+    {t:"猶太人將重新成為神計畫的中心。", A:"是的，神會恢復以色列國", B:"否，教會是新以色列", C:"兩者皆在神救贖史中"},
+    {t:"以西結書 40–48 章的聖殿異象是：", A:"未來真實建築", B:"象徵基督同在", C:"歷史與象徵的融合"},
+    {t:"千禧年代表什麼？", A:"耶穌地上統治的實際時期", B:"教會遍滿世界的屬靈得勝", C:"基督復活後到再來的整段時期"},
+    {t:"教會在歷史中的角色是：", A:"作見證並等候主再來", B:"逐漸轉化世界帶來和平", C:"在張力中持守直到審判"},
+    {t:"我對當前世界局勢的看法：", A:"越來越壞，預備迎接再臨", B:"越來越好，神國逐漸實現", C:"好壞交替直到神終審"},
+    {t:"啟示錄獸與印號碗等象徵：", A:"未來將發生的真實事件", B:"象徵歷史中反神勢力", C:"主要是屬靈寓意"},
+    {t:"啟示錄 20 章的一千年：", A:"字面的一千年", B:"象徵性的長期", C:"次要的數字象徵"},
+    {t:"「被提」會在何時發生？", A:"大災難前（前災被提）", B:"災後或同時", C:"不是核心教導"},
+    {t:"耶穌的國度現在已經存在嗎？", A:"尚未完全實現", B:"已在教會中開始", C:"屬靈現實，終末揭示"},
+    {t:"對「新天新地」的理解：", A:"未來真實的新創造", B:"世界被更新的象徵", C:"代表永恆的神同在"},
+    {t:"最後審判與復活：", A:"分階段發生（義人先復活）", B:"同時發生", C:"偏向屬靈更新的理解"},
+    {t:"末世常引用的經文組合：", A:"啟示錄、但以理書", B:"馬太 24、詩篇 72", C:"林前 15、啟示錄 21"},
+    {t:"較認同的講道主題：", A:"預言與警醒", B:"神國在地如在天", C:"活出盼望與永恆"},
+    {t:"信徒面對末世應：", A:"警醒預備迎接再臨", B:"積極改變世界傳福音", C:"忍耐持守盼望救贖"},
+    {t:"對於『聖殿獻祭恢復』：", A:"將在彌賽亞國度實現", B:"已被十架取代", C:"僅象徵敬拜與悔改"},
+    {t:"我最期盼主再來時看見：", A:"審判惡人、建立國度", B:"世界和好、愛充滿大地", C:"神完全臨在，萬物更新"}
+  ];
+
+  // Items that strongly indicate Dispensational Premill (score "disp")
+  const DISP_KEYS = [2, 3, 4, 11]; // Q index (0-based) where A implies dispensational leaning
+  // Explanation text
+  const EXPLAINS = {
+    premill_disp: {
+      title:"你最接近：時代論前千禧派（Dispensational Premillennialism）",
+      body:`你傾向以較「字面-歷史-文法」的方式解讀預言，重視以色列在末世的角色，
+      期待聖殿可能重建，強調主再來前的大災難與被提（常理解為與降臨區分）。
+      這觀點強調基督在地上親自作王的一千年，並以啟示錄 20 章為時間架構的核心。`
+    },
+    premill_hist: {
+      title:"你最接近：歷史前千禧派（Historic Premillennialism）",
+      body:`你相信基督將再臨並建立地上國度，但較少強調被提與降臨分開，
+      對以色列與聖殿的角色較不以系統性預表為中心。你多從整全神學與教會歷史看待預言應驗。`
+    },
+    postmill: {
+      title:"你最接近：後千禧派（Postmillennialism）",
+      body:`你傾向從教會使命與福音擴展理解千禧，認為歷史會在神恩典中逐步向好，
+      基督在千禧之後再來；聖殿多視為教會與神同在的象徵。`
+    },
+    amill: {
+      title:"你最接近：無千禧派（Amillennialism）",
+      body:`你多以象徵—救贖歷史視角詮釋預言，認為千禧是象徵性，
+      現今時代已在基督掌權之下，最終等候主再來帶來最後審判與新天新地。`
+    },
+    mixed: {
+      title:"你的結果：混合傾向",
+      body:`你的作答在兩個或以上取向之間相當接近。這很常見！
+      建議回到啟示錄 20、馬太 24、但以理 7–12、以西結 40–48 與教會歷史中的經典詮釋，
+      逐題釐清你對「千禧、聖殿、以色列角色、被提/降臨關係」的看法。`
+    }
+  };
+
+  // ---- Render Questions ----
+  const qGrid = document.getElementById('qGrid');
+  QUESTIONS.forEach((q, i)=>{
+    const card = document.createElement('div');
+    card.className = 'q';
+    const hid = 'q'+(i+1);
+    card.innerHTML = `
+      <h3>${i+1}. ${q.t}</h3>
+      <label>
+        <input type="radio" name="${hid}" value="A" data-choice="A" />
+        <span class="opt">A. ${q.A}</span>
+      </label>
+      <label>
+        <input type="radio" name="${hid}" value="B" data-choice="B" />
+        <span class="opt">B. ${q.B}</span>
+      </label>
+      <label>
+        <input type="radio" name="${hid}" value="C" data-choice="C" />
+        <span class="opt">C. ${q.C}</span>
+      </label>
+    `;
+    qGrid.appendChild(card);
+  });
+
+  // ---- Progress & Validation ----
+  const total = QUESTIONS.length;
+  const counter = document.getElementById('counter');
+  const bar = document.getElementById('bar');
+  const submitBtn = document.getElementById('submitBtn');
+  const quizForm = document.getElementById('quiz');
+  const resultBox = document.getElementById('result');
+  const primary = document.getElementById('primary');
+  const explain = document.getElementById('explain');
+  const tags = document.getElementById('tags');
+
+  function updateProgress(){
+    const answered = new FormData(quizForm);
+    const keys = new Set();
+    for (const [k,v] of answered.entries()){ keys.add(k); }
+    const n = keys.size;
+    const pct = Math.round(n/total*100);
+    counter.textContent = `已作答 ${n} / ${total}`;
+    bar.style.width = pct + '%';
+    submitBtn.disabled = n !== total;
+  }
+
+  quizForm.addEventListener('change', updateProgress);
+  updateProgress();
+
+  // ---- Scoring Logic ----
+  function computeResult(){
+    const data = new FormData(quizForm);
+    let A=0,B=0,C=0, disp=0;
+    const choices = [];
+
+    for(let i=0;i<total;i++){
+      const key = 'q'+(i+1);
+      const v = data.get(key);
+      choices.push(v||'');
+      if(v==='A') A++; else if(v==='B') B++; else if(v==='C') C++;
+      if(v==='A' && DISP_KEYS.includes(i)) disp++;
+    }
+
+    const summary = {A,B,C,disp,choices};
+    // Determine primary
+    let sorted = [
+      {k:'A', v:A},
+      {k:'B', v:B},
+      {k:'C', v:C},
+    ].sort((x,y)=>y.v-x.v);
+
+    const top = sorted[0], second = sorted[1];
+    let type='';
+    if (top.v === second.v){ // tie
+      type='mixed';
+    } else if (top.k==='A'){
+      // A-majority: decide between dispensational vs historic premill
+      if (disp >= 3){
+        type='premill_disp';
+      } else {
+        type='premill_hist';
+      }
+    } else if (top.k==='B'){
+      type='postmill';
+    } else if (top.k==='C'){
+      type='amill';
+    }
+
+    return {type, summary};
+  }
+
+  function renderResult(res){
+    const mapTitle = {
+      premill_disp:"時代論前千禧派",
+      premill_hist:"歷史前千禧派",
+      postmill:"後千禧派",
+      amill:"無千禧派",
+      mixed:"混合傾向"
+    };
+    const exp = EXPLAINS[res.type];
+    primary.innerHTML = `<strong>${exp.title}</strong><br>
+      <span class="small">你的傾向分布：A=${res.summary.A}，B=${res.summary.B}，C=${res.summary.C}；時代論指標（Q3、Q4、Q5、Q12 的 A）得分 = ${res.summary.disp}</span>`;
+
+    // tags
+    tags.innerHTML='';
+    const pills = [];
+    pills.push(makePill('耶穌再來'));
+    pills.push(makePill('千禧年理解'));
+    pills.push(makePill('聖殿觀'));
+    pills.push(makePill('教會時代'));
+    if(res.type==='premill_disp') pills.push(makePill('被提與降臨區分'));
+    if(res.type==='postmill') pills.push(makePill('神國擴展'));
+    if(res.type==='amill') pills.push(makePill('象徵詮釋'));
+    pills.forEach(p=>tags.appendChild(p));
+
+    explain.innerHTML = `<p>${exp.body}</p>
+    <details>
+      <summary>如何細調你的結果？（展開查看）</summary>
+      <ul>
+        <li><strong>想確認是否偏「時代論」：</strong>重新檢視 Q3、Q4、Q5、Q6、Q12；若多選 A，表示你更看重以色列與聖殿在末世的字面角色。</li>
+        <li><strong>若介於前千禧與無千禧：</strong>回到啟 20：1–6，看你是否將「一千年」視為字面年代或象徵長期。</li>
+        <li><strong>若介於後千禧與無千禧：</strong>評估你對歷史「走向更好」的期待是否來自福音影響社會之神學。</li>
+      </ul>
+    </details>`;
+
+    resultBox.style.display='block';
+    resultBox.scrollIntoView({behavior:'smooth'});
+  }
+
+  function makePill(text){
+    const el=document.createElement('span');
+    el.className='pill'; el.textContent=text; return el;
+  }
+
+  // ---- Buttons ----
+  document.getElementById('submitBtn').addEventListener('click', ()=>{
+    const res = computeResult();
+    renderResult(res);
+  });
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    quizForm.reset();
+    updateProgress();
+    document.getElementById('result').style.display='none';
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+  document.getElementById('restartBtn').addEventListener('click', ()=>{
+    document.getElementById('result').style.display='none';
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+  document.getElementById('printBtn').addEventListener('click', ()=>{
+    window.print();
+  });
+
+  // Copy summary
+  document.getElementById('copyBtn').addEventListener('click', ()=>{
+    const res = computeResult();
+    const exp = EXPLAINS[res.type];
+    const text = `基督教末世論信仰測驗｜結果：${exp.title}
+A=${res.summary.A}，B=${res.summary.B}，C=${res.summary.C}；時代論指標=${res.summary.disp}
+重點解讀：${exp.body.replace(/\s+/g,' ').trim()}`;
+    navigator.clipboard.writeText(text).then(()=>{
+      alert('已複製測驗摘要到剪貼簿！');
+    }).catch(()=>{
+      alert('複製失敗，請手動選取文字。');
+    });
+  });
+
+  // Keyboard access improvement: pressing label selects radio
+  document.querySelectorAll('.q label').forEach(lab=>{
+    lab.addEventListener('keydown',(e)=>{
+      if(e.key==='Enter' || e.key===' '){
+        const input = lab.querySelector('input[type=radio]');
+        input.checked = true;
+        input.dispatchEvent(new Event('change', {bubbles:true}));
+      }
+    });
+    lab.setAttribute('tabindex','0');
+    lab.setAttribute('role','radio');
+    lab.setAttribute('aria-checked','false');
+    lab.addEventListener('click', ()=>{
+      document.querySelectorAll('.q label').forEach(x=>x.setAttribute('aria-checked','false'));
+      lab.setAttribute('aria-checked','true');
+    });
+  });
+  </script>
+</body>
+</html>
